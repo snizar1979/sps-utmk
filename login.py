@@ -5,10 +5,106 @@ import datetime
 
 # --- SETTING HALAMAN ---
 st.set_page_config(
-    page_title="Sistem Pengurusan Stor UTMK",
-    page_icon="🖥️",
+    page_title="Sistem Pengurusan Stor UTMK - IPN JANM",
+    page_icon="🏛️",
     layout="wide"
 )
+
+# --- REKA BENTUK KORPORAT (CUSTOM CSS) ---
+st.markdown("""
+    <style>
+    /* Skim Warna Utama Korporat */
+    :root {
+        --primary-color: #002B49;
+        --secondary-color: #1A5276;
+        --accent-color: #D4AC0D;
+        --bg-light: #F8F9F9;
+    }
+    
+    /* Header Container */
+    .header-container {
+        display: flex;
+        align-items: center;
+        background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
+        padding: 20px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        margin-bottom: 25px;
+        color: white;
+    }
+    
+    .header-logo {
+        width: 90px;
+        margin-right: 25px;
+        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    .header-text h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 400;
+        letter-spacing: 1px;
+        color: #E5E8E8;
+        text-transform: uppercase;
+    }
+    
+    .header-text h1 {
+        margin: 2px 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #FFFFFF;
+        letter-spacing: 0.5px;
+    }
+    
+    .header-text h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        color: #F4D03F;
+    }
+
+    /* Penambahbaikan Kad Metrik */
+    [data-testid="stMetricValue"] {
+        font-size: 28px;
+        font-weight: bold;
+        color: #002B49;
+    }
+    
+    [data-testid="stMetric"] {
+        background-color: #FFFFFF;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        border-left: 5px solid #003366;
+    }
+    
+    /* Penyesuaian Form & Button */
+    .stButton>button {
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    /* Hide Streamlit Menu Fluff */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
+
+# --- FUNGSI HEADER RASMI ---
+def render_header():
+    # Pautan logo Jata Negara format SVG/PNG telus
+    jata_url = "https://upload.wikimedia.org/wikipedia/commons/2/26/Coat_of_arms_of_Malaysia.svg"
+    
+    st.markdown(f"""
+        <div class="header-container">
+            <img src="{jata_url}" class="header-logo" alt="Jata Negara">
+            <div class="header-text">
+                <h3>INSTITUT PERAKAUNAN NEGARA</h3>
+                <h1>JABATAN AKAUNTAN NEGARA MALAYSIA</h1>
+                <h4>SPS-ICT (UTMK)</h4>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
 # --- PANGKALAN DATA (SQLITE) ---
 def init_db():
@@ -99,7 +195,7 @@ def edit_dialog(row):
         kuantiti = st.number_input("Kuantiti", min_value=1, value=int(row['kuantiti']))
         status = st.selectbox("Status", status_list, index=idx_status)
         
-        btn_simpan = st.form_submit_button("Simpan Perubahan", use_container_width=True)
+        btn_simpan = st.form_submit_button("Simpan Perubahan", use_container_width=True, type="primary")
         if btn_simpan:
             if update_item(row['id'], nama, no_siri, kategori, kuantiti, status):
                 st.success("Maklumat aset berjaya dikemaskini!")
@@ -107,7 +203,7 @@ def edit_dialog(row):
             else:
                 st.error("Gagal! Nombor siri bertembung dengan aset lain.")
 
-# --- LOGIK LOG MASUK (AUTHENTICATION) ---
+# --- LOGIK LOG MASUK ---
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 if 'user' not in st.session_state:
@@ -128,66 +224,96 @@ def logout():
 
 # --- PAPARAN 1: HALAMAN LOG MASUK ---
 if not st.session_state['logged_in']:
-    st.markdown("<h2 style='text-align: center;'>💻 Log Masuk Sistem Pengurusan Stor UTMK</h2>", unsafe_allow_html=True)
-    st.write("---")
+    render_header()
     
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
-        st.subheader("Sila Masukkan Kredensial Admin")
-        username_input = st.text_input("Nama Pengguna (Username)", value="admin")
-        password_input = st.text_input("Kata Laluan (Password)", type="password", value="utmk123")
+        st.markdown("""
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-top: 4px solid #002B49;">
+                <h3 style="text-align: center; color: #002B49; margin-bottom: 20px;">🔒 Log Masuk Sistem</h3>
+            </div>
+        """, unsafe_allow_html=True)
         
-        if st.button("Log Masuk", use_container_width=True):
-            login(username_input, password_input)
+        with st.form("login_form"):
+            username_input = st.text_input("Nama Pengguna (Username)", value="admin")
+            password_input = st.text_input("Kata Laluan (Password)", type="password", value="utmk123")
             
-        st.info("💡 **Nota Demonstrasi:** Username default = `admin`, Password default = `utmk123`")
+            if st.form_submit_button("Log Masuk", use_container_width=True, type="primary"):
+                login(username_input, password_input)
+            
+        st.info("💡 **Nota Kredensial:** Username default = `admin`, Password default = `utmk123`")
 
 # --- PAPARAN 2: PAPAN PEMUKA (DASHBOARD) UTAMA ---
 else:
-    st.sidebar.title(f"👤 {st.session_state['user']}")
-    menu = st.sidebar.radio("Navigasi Menu", ["Papan Pemuka", "Pendaftaran Aset Baharu", "Senarai & Urus Aset"])
-    st.sidebar.write("---")
-    if st.sidebar.button("Log Keluar", use_container_width=True):
-        logout()
+    # Render Header Rasmi
+    render_header()
 
-    st.title("🖥️ Papan Pemuka Pengurusan Stor UTMK")
-    st.caption("Sistem Pemantauan Aset dan Peralatan ICT Unit Teknologi Maklumat")
-    st.write("---")
+    # Sidebar Navigasi Korporat
+    st.sidebar.markdown("### 👤 Sesi Pengguna")
+    st.sidebar.info(f"**Pengguna:** {st.session_state['user']}\n\n**Unit:** SPS-ICT (UTMK)")
+    st.sidebar.markdown("---")
+    
+    menu = st.sidebar.radio("📌 Navigasi Utama", ["Papan Pemuka", "Pendaftaran Aset Baharu", "Senarai & Urus Aset"])
+    st.sidebar.markdown("---")
+    
+    if st.sidebar.button("🚪 Log Keluar", use_container_width=True):
+        logout()
 
     df_items = get_items()
 
     # --- MENU 1: PAPAN PEMUKA ---
     if menu == "Papan Pemuka":
+        st.markdown("### 📊 Ringkasan Eksekutif Aset")
+        
         total_items = df_items['kuantiti'].sum()
         total_tersedia = df_items[df_items['status'] == 'Tersedia']['kuantiti'].sum()
         total_dipinjam = df_items[df_items['status'] == 'Dipinjam']['kuantiti'].sum()
         total_rosak = df_items[df_items['status'] == 'Perlu Baiki']['kuantiti'].sum()
 
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Jumlah Unit Aset", total_items)
-        col2.metric("Stok Tersedia", total_tersedia)
-        col3.metric("Sedang Dipinjam", total_dipinjam)
-        col4.metric("Perlu Baiki", total_rosak)
+        col1.metric("Jumlah Unit Aset", f"{total_items} Unit")
+        col2.metric("Stok Tersedia", f"{total_tersedia} Unit")
+        col3.metric("Sedang Dipinjam", f"{total_dipinjam} Unit")
+        col4.metric("Perlu Baiki", f"{total_rosak} Unit")
 
-        st.write("### 📊 Taburan Aset Mengikut Kategori")
-        kategori_chart = df_items.groupby('kategori')['kuantiti'].sum()
-        st.bar_chart(kategori_chart)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        c_left, c_right = st.columns([1, 1])
+        with c_left:
+            st.markdown("#### 📦 Taburan Kategori Aset")
+            kategori_chart = df_items.groupby('kategori')['kuantiti'].sum()
+            st.bar_chart(kategori_chart, color="#003366")
 
-        st.write("### 📦 Ringkasan Stok Terkini")
-        st.dataframe(df_items[['nama_aset', 'no_siri', 'kategori', 'kuantiti', 'status']], use_container_width=True)
+        with c_right:
+            st.markdown("#### 📋 Stok Mengikut Status")
+            status_chart = df_items.groupby('status')['kuantiti'].sum()
+            st.bar_chart(status_chart, color="#D4AC0D")
+
+        st.markdown("---")
+        st.markdown("#### 🔍 Ringkasan Inventori Terkini")
+        st.dataframe(
+            df_items[['nama_aset', 'no_siri', 'kategori', 'kuantiti', 'status']], 
+            use_container_width=True,
+            hide_index=True
+        )
 
     # --- MENU 2: PENDAFTARAN ASET BAHARU ---
     elif menu == "Pendaftaran Aset Baharu":
-        st.subheader("➕ Tambah Aset ICT Baharu ke Stor")
+        st.markdown("### ➕ Pendaftaran Aset ICT Baharu")
+        st.caption("Sila isi maklumat borang di bawah untuk memasukkan unit ke dalam pangkalan data stor.")
         
         with st.form("add_asset_form", clear_on_submit=True):
-            nama_aset = st.text_input("Nama Aset / Peralatan")
-            no_siri = st.text_input("Nombor Siri / Tag Aset (Mesti Unik)")
-            kategori = st.selectbox("Kategori", ["Laptop", "Desktop", "Monitor", "Projektor", "Aksesori", "Rangkaian"])
-            kuantiti = st.number_input("Kuantiti", min_value=1, value=1)
-            status = st.selectbox("Status Initial", ["Tersedia", "Dipinjam", "Perlu Baiki"])
+            col_a, col_b = st.columns(2)
+            with col_a:
+                nama_aset = st.text_input("Nama Aset / Peralatan*")
+                no_siri = st.text_input("Nombor Siri / Tag Aset (Unik)*")
+                kategori = st.selectbox("Kategori", ["Laptop", "Desktop", "Monitor", "Projektor", "Aksesori", "Rangkaian"])
+            with col_b:
+                kuantiti = st.number_input("Kuantiti Unit", min_value=1, value=1)
+                status = st.selectbox("Status Awal", ["Tersedia", "Dipinjam", "Perlu Baiki"])
             
-            submitted = st.form_submit_button("Simpan Aset Baharu")
+            st.markdown("<br>", unsafe_allow_html=True)
+            submitted = st.form_submit_button("Daftar Aset Baharu", use_container_width=True, type="primary")
             
             if submitted:
                 if nama_aset and no_siri:
@@ -196,15 +322,15 @@ else:
                         st.success(f"Aset **{nama_aset}** berjaya didaftarkan!")
                         st.rerun()
                     else:
-                        st.error("Gagal! Nombor siri ini sudah wujud dalam sistem.")
+                        st.error("Gagal! Nombor siri ini telah didaftarkan sebelum ini.")
                 else:
-                    st.warning("Sila isi semua ruang yang wajib.")
+                    st.warning("Sila isi ruangan bernombor siri dan nama aset yang wajib.")
 
     # --- MENU 3: SENARAI & URUS ASET ---
     elif menu == "Senarai & Urus Aset":
-        st.subheader("📑 Senarai Penuh & Pengurusan Aset")
+        st.markdown("### 📑 Senarai & Pengurusan Aset")
         
-        search_query = st.text_input("🔍 Cari mengikut Nama Aset atau Nombor Siri")
+        search_query = st.text_input("🔍 Carian Pantas (Cari Nama Aset atau Nombor Siri):")
         filtered_df = df_items
         if search_query:
             filtered_df = df_items[
@@ -212,10 +338,10 @@ else:
                 df_items['no_siri'].str.contains(search_query, case=False)
             ]
         
-        st.write("---")
+        st.markdown("---")
         
-        # Header Table Manual
-        h1, h2, h3, h4, h5, h6 = st.columns([3, 2, 2, 1, 2, 2])
+        # Header Table Style
+        h1, h2, h3, h4, h5, h6 = st.columns([3, 2, 2, 1, 2, 1.5])
         h1.markdown("**Nama Aset**")
         h2.markdown("**No. Siri**")
         h3.markdown("**Kategori**")
@@ -224,37 +350,33 @@ else:
         h6.markdown("**Tindakan**")
         st.divider()
 
-        # Flag pemadaman di peringkat session state
         if 'item_deleted' not in st.session_state:
             st.session_state['item_deleted'] = False
 
-        # Paparan setiap baris data bersama butang tindakan
         if filtered_df.empty:
-            st.info("Tiada rekod aset dijumpai.")
+            st.info("Tiada rekod aset dijumpai dalam pangkalan data.")
         else:
             for _, row in filtered_df.iterrows():
-                c1, c2, c3, c4, c5, c6 = st.columns([3, 2, 2, 1, 2, 2])
-                c1.write(row['nama_aset'])
+                c1, c2, c3, c4, c5, c6 = st.columns([3, 2, 2, 1, 2, 1.5])
+                c1.write(f"**{row['nama_aset']}**")
                 c2.write(f"`{row['no_siri']}`")
                 c3.write(row['kategori'])
                 c4.write(row['kuantiti'])
                 
-                # Warna Lencana Status
+                # Warna Lencana Status Korporat
                 if row['status'] == 'Tersedia':
-                    c5.caption("🟢 Tersedia")
+                    c5.markdown("🟢 **Tersedia**")
                 elif row['status'] == 'Dipinjam':
-                    c5.caption("🟡 Dipinjam")
+                    c5.markdown("🟡 **Dipinjam**")
                 else:
-                    c5.caption("🔴 Perlu Baiki")
+                    c5.markdown("🔴 **Perlu Baiki**")
                 
-                # Lajur Butang Tindakan
+                # Action Buttons
                 btn_col1, btn_col2 = c6.columns(2)
                 
-                # Butang Edit (Membuka Modal Pop-up)
                 if btn_col1.button("✏️", key=f"edit_{row['id']}", help="Kemaskini Aset"):
                     edit_dialog(row)
 
-                # Butang Padam (Menggunakan Popover Pengesahan)
                 with btn_col2:
                     with st.popover("🗑️", help="Padam Aset"):
                         st.write("Padam rekod ini?")
@@ -264,7 +386,6 @@ else:
                             st.session_state['item_deleted'] = True
                             st.rerun()
 
-        # Lakukan pemuatan semula peringkat aplikasi jika ada rekod yang dipadam
         if st.session_state['item_deleted']:
             st.session_state['item_deleted'] = False
             st.rerun()
