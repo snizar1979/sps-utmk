@@ -10,47 +10,70 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- REKA BENTUK KORPORAT (CUSTOM CSS) ---
+# --- REKA BENTUK KORPORAT & RESPONSIF (CUSTOM CSS) ---
 st.markdown("""
     <style>
-    /* Skim Warna Utama Korporat */
+    /* Variabel Skim Warna (Biru, Hitam, Oren) */
     :root {
-        --primary-color: #002B49;
-        --secondary-color: #1A5276;
-        --accent-color: #D4AC0D;
-        --bg-light: #F8F9F9;
+        --bg-navy: #0F172A;        /* Biru Gelap / Black-Navy */
+        --accent-orange: #FF6B00;   /* Oren Korporat */
+        --text-dark: #1E293B;       /* Hitam Slate */
+        --blue-accent: #2563EB;     /* Biru Terang Accent */
+        --bg-card: #FFFFFF;
     }
     
-    /* Header Container */
+    /* Header Container - Center & Responsive */
     .header-container {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
-        padding: 20px 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        justify-content: center;
+        text-align: center;
+        background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%);
+        padding: 20px 15px;
+        border-radius: 12px;
+        border-bottom: 4px solid var(--accent-orange);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         margin-bottom: 25px;
         color: white;
     }
-    
+
+    /* Susunan Logo & Teks */
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    @media (min-width: 768px) {
+        .header-content {
+            flex-direction: row;
+            gap: 20px;
+        }
+        .header-text {
+            text-align: left;
+        }
+    }
+
     .header-logo {
-        width: 90px;
-        margin-right: 25px;
-        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));
+        width: 65px;
+        height: auto;
+        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.4));
     }
     
     .header-text h3 {
         margin: 0;
-        font-size: 16px;
-        font-weight: 400;
-        letter-spacing: 1px;
-        color: #E5E8E8;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        color: #94A3B8; /* Biru Kelabu Soft */
         text-transform: uppercase;
     }
     
     .header-text h1 {
         margin: 2px 0;
-        font-size: 24px;
+        font-size: 18px;
         font-weight: 700;
         color: #FFFFFF;
         letter-spacing: 0.5px;
@@ -58,50 +81,70 @@ st.markdown("""
     
     .header-text h4 {
         margin: 0;
-        font-size: 14px;
-        font-weight: 500;
-        color: #F4D03F;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent-orange);
+        letter-spacing: 1px;
     }
 
-    /* Penambahbaikan Kad Metrik */
+    /* Kad Metrik Styling */
     [data-testid="stMetricValue"] {
-        font-size: 28px;
+        font-size: 22px !important;
         font-weight: bold;
-        color: #002B49;
+        color: var(--bg-navy) !important;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        font-size: 12px !important;
+        color: #475569 !important;
     }
     
     [data-testid="stMetric"] {
-        background-color: #FFFFFF;
-        padding: 15px 20px;
+        background-color: var(--bg-card);
+        padding: 12px 16px;
         border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-        border-left: 5px solid #003366;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-left: 4px solid var(--accent-orange);
     }
     
-    /* Penyesuaian Form & Button */
+    /* Penyesuaian Butang */
     .stButton>button {
         border-radius: 6px;
+        font-size: 13px;
         font-weight: 600;
     }
 
-    /* Hide Streamlit Menu Fluff */
+    /* Primary Button Customization (Oren) */
+    button[kind="primary"] {
+        background-color: var(--accent-orange) !important;
+        border-color: var(--accent-orange) !important;
+        color: white !important;
+    }
+
+    button[kind="primary"]:hover {
+        background-color: #E66000 !important;
+        border-color: #E66000 !important;
+    }
+
+    /* Sembunyikan elemen bawaan Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
-# --- FUNGSI HEADER RASMI ---
+# --- FUNGSI HEADER RASMI (TERENGAH & RESPONSIVE) ---
 def render_header():
-    # Pautan logo Jata Negara format SVG/PNG telus
     jata_url = "https://upload.wikimedia.org/wikipedia/commons/2/26/Coat_of_arms_of_Malaysia.svg"
     
     st.markdown(f"""
         <div class="header-container">
-            <img src="{jata_url}" class="header-logo" alt="Jata Negara">
-            <div class="header-text">
-                <h3>INSTITUT PERAKAUNAN NEGARA</h3>
-                <h1>JABATAN AKAUNTAN NEGARA MALAYSIA</h1>
-                <h4>SPS-ICT (UTMK)</h4>
+            <div class="header-content">
+                <img src="{jata_url}" class="header-logo" alt="Jata Negara">
+                <div class="header-text">
+                    <h3>INSTITUT PERAKAUNAN NEGARA</h3>
+                    <h1>JABATAN AKAUNTAN NEGARA MALAYSIA</h1>
+                    <h4>SPS-ICT (UTMK)</h4>
+                </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -226,11 +269,11 @@ def logout():
 if not st.session_state['logged_in']:
     render_header()
     
-    col1, col2, col3 = st.columns([1, 1.5, 1])
+    col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
         st.markdown("""
-            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-top: 4px solid #002B49;">
-                <h3 style="text-align: center; color: #002B49; margin-bottom: 20px;">🔒 Log Masuk Sistem</h3>
+            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-top: 3px solid #FF6B00;">
+                <h4 style="text-align: center; color: #0F172A; margin-bottom: 15px; font-size: 16px;">🔒 Log Masuk Sistem</h4>
             </div>
         """, unsafe_allow_html=True)
         
@@ -241,19 +284,18 @@ if not st.session_state['logged_in']:
             if st.form_submit_button("Log Masuk", use_container_width=True, type="primary"):
                 login(username_input, password_input)
             
-        st.info("💡 **Nota Kredensial:** Username default = `admin`, Password default = `utmk123`")
+        st.caption("💡 **Akses Demo:** Username: `admin` | Password: `utmk123`")
 
 # --- PAPARAN 2: PAPAN PEMUKA (DASHBOARD) UTAMA ---
 else:
-    # Render Header Rasmi
     render_header()
 
     # Sidebar Navigasi Korporat
-    st.sidebar.markdown("### 👤 Sesi Pengguna")
-    st.sidebar.info(f"**Pengguna:** {st.session_state['user']}\n\n**Unit:** SPS-ICT (UTMK)")
+    st.sidebar.markdown("### 👤 Pengguna")
+    st.sidebar.info(f"**{st.session_state['user']}**\n\nSPS-ICT (UTMK)")
     st.sidebar.markdown("---")
     
-    menu = st.sidebar.radio("📌 Navigasi Utama", ["Papan Pemuka", "Pendaftaran Aset Baharu", "Senarai & Urus Aset"])
+    menu = st.sidebar.radio("📌 Menu Utama", ["Papan Pemuka", "Pendaftaran Aset Baharu", "Senarai & Urus Aset"])
     st.sidebar.markdown("---")
     
     if st.sidebar.button("🚪 Log Keluar", use_container_width=True):
@@ -263,34 +305,34 @@ else:
 
     # --- MENU 1: PAPAN PEMUKA ---
     if menu == "Papan Pemuka":
-        st.markdown("### 📊 Ringkasan Eksekutif Aset")
+        st.markdown("##### 📊 Ringkasan Eksekutif Aset")
         
         total_items = df_items['kuantiti'].sum()
         total_tersedia = df_items[df_items['status'] == 'Tersedia']['kuantiti'].sum()
         total_dipinjam = df_items[df_items['status'] == 'Dipinjam']['kuantiti'].sum()
         total_rosak = df_items[df_items['status'] == 'Perlu Baiki']['kuantiti'].sum()
 
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Jumlah Unit Aset", f"{total_items} Unit")
-        col2.metric("Stok Tersedia", f"{total_tersedia} Unit")
-        col3.metric("Sedang Dipinjam", f"{total_dipinjam} Unit")
-        col4.metric("Perlu Baiki", f"{total_rosak} Unit")
+        col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+        col1.metric("Jumlah Unit", f"{total_items}")
+        col2.metric("Tersedia", f"{total_tersedia}")
+        col3.metric("Dipinjam", f"{total_dipinjam}")
+        col4.metric("Perlu Baiki", f"{total_rosak}")
 
         st.markdown("<br>", unsafe_allow_html=True)
         
         c_left, c_right = st.columns([1, 1])
         with c_left:
-            st.markdown("#### 📦 Taburan Kategori Aset")
+            st.markdown("<h6>📦 Taburan Kategori</h6>", unsafe_allow_html=True)
             kategori_chart = df_items.groupby('kategori')['kuantiti'].sum()
-            st.bar_chart(kategori_chart, color="#003366")
+            st.bar_chart(kategori_chart, color="#1E3A8A")
 
         with c_right:
-            st.markdown("#### 📋 Stok Mengikut Status")
+            st.markdown("<h6>📋 Taburan Status</h6>", unsafe_allow_html=True)
             status_chart = df_items.groupby('status')['kuantiti'].sum()
-            st.bar_chart(status_chart, color="#D4AC0D")
+            st.bar_chart(status_chart, color="#FF6B00")
 
         st.markdown("---")
-        st.markdown("#### 🔍 Ringkasan Inventori Terkini")
+        st.markdown("<h6>🔍 Ringkasan Inventori Terkini</h6>", unsafe_allow_html=True)
         st.dataframe(
             df_items[['nama_aset', 'no_siri', 'kategori', 'kuantiti', 'status']], 
             use_container_width=True,
@@ -299,8 +341,7 @@ else:
 
     # --- MENU 2: PENDAFTARAN ASET BAHARU ---
     elif menu == "Pendaftaran Aset Baharu":
-        st.markdown("### ➕ Pendaftaran Aset ICT Baharu")
-        st.caption("Sila isi maklumat borang di bawah untuk memasukkan unit ke dalam pangkalan data stor.")
+        st.markdown("##### ➕ Pendaftaran Aset ICT Baharu")
         
         with st.form("add_asset_form", clear_on_submit=True):
             col_a, col_b = st.columns(2)
@@ -322,15 +363,15 @@ else:
                         st.success(f"Aset **{nama_aset}** berjaya didaftarkan!")
                         st.rerun()
                     else:
-                        st.error("Gagal! Nombor siri ini telah didaftarkan sebelum ini.")
+                        st.error("Gagal! Nombor siri telah didaftarkan sebelum ini.")
                 else:
-                    st.warning("Sila isi ruangan bernombor siri dan nama aset yang wajib.")
+                    st.warning("Sila isi ruang bertanda *")
 
     # --- MENU 3: SENARAI & URUS ASET ---
     elif menu == "Senarai & Urus Aset":
-        st.markdown("### 📑 Senarai & Pengurusan Aset")
+        st.markdown("##### 📑 Senarai & Pengurusan Aset")
         
-        search_query = st.text_input("🔍 Carian Pantas (Cari Nama Aset atau Nombor Siri):")
+        search_query = st.text_input("🔍 Carian (Nama Aset / Nombor Siri):")
         filtered_df = df_items
         if search_query:
             filtered_df = df_items[
@@ -354,7 +395,7 @@ else:
             st.session_state['item_deleted'] = False
 
         if filtered_df.empty:
-            st.info("Tiada rekod aset dijumpai dalam pangkalan data.")
+            st.info("Tiada rekod aset dijumpai.")
         else:
             for _, row in filtered_df.iterrows():
                 c1, c2, c3, c4, c5, c6 = st.columns([3, 2, 2, 1, 2, 1.5])
@@ -363,7 +404,7 @@ else:
                 c3.write(row['kategori'])
                 c4.write(row['kuantiti'])
                 
-                # Warna Lencana Status Korporat
+                # Indicator Status
                 if row['status'] == 'Tersedia':
                     c5.markdown("🟢 **Tersedia**")
                 elif row['status'] == 'Dipinjam':
@@ -374,11 +415,11 @@ else:
                 # Action Buttons
                 btn_col1, btn_col2 = c6.columns(2)
                 
-                if btn_col1.button("✏️", key=f"edit_{row['id']}", help="Kemaskini Aset"):
+                if btn_col1.button("✏️", key=f"edit_{row['id']}", help="Kemaskini"):
                     edit_dialog(row)
 
                 with btn_col2:
-                    with st.popover("🗑️", help="Padam Aset"):
+                    with st.popover("🗑️", help="Padam"):
                         st.write("Padam rekod ini?")
                         if st.button("Ya, Padam", key=f"del_confirm_{row['id']}", type="primary"):
                             delete_item(row['id'])
