@@ -214,7 +214,7 @@ else:
         
         st.write("---")
         
-        # Header Table Manuel
+        # Header Table Manual
         h1, h2, h3, h4, h5, h6 = st.columns([3, 2, 2, 1, 2, 2])
         h1.markdown("**Nama Aset**")
         h2.markdown("**No. Siri**")
@@ -223,6 +223,10 @@ else:
         h5.markdown("**Status**")
         h6.markdown("**Tindakan**")
         st.divider()
+
+        # Flag pemadaman di peringkat session state
+        if 'item_deleted' not in st.session_state:
+            st.session_state['item_deleted'] = False
 
         # Paparan setiap baris data bersama butang tindakan
         if filtered_df.empty:
@@ -257,4 +261,10 @@ else:
                         if st.button("Ya, Padam", key=f"del_confirm_{row['id']}", type="primary"):
                             delete_item(row['id'])
                             st.toast(f"Aset '{row['nama_aset']}' telah dipadam.")
+                            st.session_state['item_deleted'] = True
                             st.rerun()
+
+        # Lakukan pemuatan semula peringkat aplikasi jika ada rekod yang dipadam
+        if st.session_state['item_deleted']:
+            st.session_state['item_deleted'] = False
+            st.rerun()
