@@ -14,7 +14,6 @@ st.set_page_config(
 def init_db():
     conn = sqlite3.connect('stor_utmk.db')
     c = conn.cursor()
-    # Jadual Aset / Inventori
     c.execute('''
         CREATE TABLE IF NOT EXISTS items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,7 +24,6 @@ def init_db():
             status TEXT NOT NULL
         )
     ''')
-    # Tambah data contoh jika jadual kosong
     c.execute("SELECT COUNT(*) FROM items")
     if c.fetchone()[0] == 0:
         sample_data = [
@@ -40,7 +38,7 @@ def init_db():
 
 init_db()
 
-# --- FUNGSI TUKAR DATA DATABASE TO PANDAS DATAFRAME ---
+# --- FUNGSI CRUD DATABASE ---
 def get_items():
     conn = sqlite3.connect('stor_utmk.db')
     df = pd.read_sql_query("SELECT * FROM items", conn)
@@ -60,6 +58,55 @@ def add_item(nama, no_siri, kategori, kuantiti, status):
         conn.close()
         return False
 
+def update_item(item_id, nama, no_siri, kategori, kuantiti, status):
+    conn = sqlite3.connect('stor_utmk.db')
+    c = conn.cursor()
+    try:
+        c.execute('''
+            UPDATE items 
+            SET nama_aset=?, no_siri=?, kategori=?, kuantiti=?, status=?
+            WHERE id=?
+        ''', (nama, no_siri, kategori, kuantiti, status, item_id))
+        conn.commit()
+        conn.close()
+        return True
+    except sqlite3.IntegrityError:
+        conn.close()
+        return False
+
+def delete_item(item_id):
+    conn = sqlite3.connect('stor_utmk.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM items WHERE id=?", (item_id,))
+    conn.commit()
+    conn.close()
+
+# --- DIALOG KEMASKINI (EDIT POP-UP) ---
+@st.dialog("✏️ Kemaskini Maklumat Aset")
+def edit_dialog(row):
+    st.write(f"Mengemaskini Aset: **{row['nama_aset']}**")
+    
+    kategori_list = ["Laptop", "Desktop", "Monitor", "Projektor", "Aksesori", "Rangkaian"]
+    idx_kategori = kategori_list.index(row['kategori']) if row['kategori'] in kategori_list else 0
+    
+    status_list = ["Tersedia", "Dipinjam", "Perlu Baiki"]
+    idx_status = status_list.index(row['status']) if row['status'] in status_list else 0
+
+    with st.form("edit_form"):
+        nama = st.text_input("Nama Aset", value=row['nama_aset'])
+        no_siri = st.text_input("Nombor Siri", value=row['no_siri'])
+        kategori = st.selectbox("Kategori", kategori_list, index=idx_kategori)
+        kuantiti = st.number_input("Kuantiti", min_value=1, value=int(row['kuantiti']))
+        status = st.selectbox("Status", status_list, index=idx_status)
+        
+        btn_simpan = st.form_submit_button("Simpan Perubahan", use_container_width=True)
+        if btn_simpan:
+            if update_item(row['id'], nama, no_siri, kategori, kuantiti, status):
+                st.success("Maklumat aset berjaya dikemaskini!")
+                st.rerun()
+            else:
+                st.error("Gagal! Nombor siri bertembung dengan aset lain.")
+
 # --- LOGIK LOG MASUK (AUTHENTICATION) ---
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
@@ -67,7 +114,6 @@ if 'user' not in st.session_state:
     st.session_state['user'] = ""
 
 def login(username, password):
-    # Kredensial Admin ringkas (Boleh ditukar mengikut kesesuaian)
     if username == "admin" and password == "utmk123":
         st.session_state['logged_in'] = True
         st.session_state['user'] = "Admin UTMK"
@@ -98,21 +144,19 @@ if not st.session_state['logged_in']:
 
 # --- PAPARAN 2: PAPAN PEMUKA (DASHBOARD) UTAMA ---
 else:
-    # Sidebar Navigation
     st.sidebar.title(f"👤 {st.session_state['user']}")
     menu = st.sidebar.radio("Navigasi Menu", ["Papan Pemuka", "Pendaftaran Aset Baharu", "Senarai & Urus Aset"])
     st.sidebar.write("---")
     if st.sidebar.button("Log Keluar", use_container_width=True):
         logout()
 
-    # Header Utama
     st.title("🖥️ Papan Pemuka Pengurusan Stor UTMK")
     st.caption("Sistem Pemantauan Aset dan Peralatan ICT Unit Teknologi Maklumat")
     st.write("---")
 
     df_items = get_items()
 
-    # --- MENU 1: PAPAN PEMUKA (METRIK RINGKASAN) ---
+    # --- MENU 1: PAPAN PEMUKA ---
     if menu == "Papan Pemuka":
         total_items = df_items['kuantiti'].sum()
         total_tersedia = df_items[df_items['status'] == 'Tersedia']['kuantiti'].sum()
@@ -150,6 +194,7 @@ else:
                     success = add_item(nama_aset, no_siri, kategori, kuantiti, status)
                     if success:
                         st.success(f"Aset **{nama_aset}** berjaya didaftarkan!")
+                        st.rerun()
                     else:
                         st.error("Gagal! Nombor siri ini sudah wujud dalam sistem.")
                 else:
@@ -157,7 +202,7 @@ else:
 
     # --- MENU 3: SENARAI & URUS ASET ---
     elif menu == "Senarai & Urus Aset":
-        st.subheader("📑 Senarai Penuh & Carian Aset")
+        st.subheader("📑 Senarai Penuh & Pengurusan Aset")
         
         search_query = st.text_input("🔍 Cari mengikut Nama Aset atau Nombor Siri")
         filtered_df = df_items
@@ -167,4 +212,49 @@ else:
                 df_items['no_siri'].str.contains(search_query, case=False)
             ]
         
-        st.dataframe(filtered_df, use_container_width=True)
+        st.write("---")
+        
+        # Header Table Manuel
+        h1, h2, h3, h4, h5, h6 = st.columns([3, 2, 2, 1, 2, 2])
+        h1.markdown("**Nama Aset**")
+        h2.markdown("**No. Siri**")
+        h3.markdown("**Kategori**")
+        h4.markdown("**Kuantiti**")
+        h5.markdown("**Status**")
+        h6.markdown("**Tindakan**")
+        st.divider()
+
+        # Paparan setiap baris data bersama butang tindakan
+        if filtered_df.empty:
+            st.info("Tiada rekod aset dijumpai.")
+        else:
+            for _, row in filtered_df.iterrows():
+                c1, c2, c3, c4, c5, c6 = st.columns([3, 2, 2, 1, 2, 2])
+                c1.write(row['nama_aset'])
+                c2.write(f"`{row['no_siri']}`")
+                c3.write(row['kategori'])
+                c4.write(row['kuantiti'])
+                
+                # Warna Lencana Status
+                if row['status'] == 'Tersedia':
+                    c5.caption("🟢 Tersedia")
+                elif row['status'] == 'Dipinjam':
+                    c5.caption("🟡 Dipinjam")
+                else:
+                    c5.caption("🔴 Perlu Baiki")
+                
+                # Lajur Butang Tindakan
+                btn_col1, btn_col2 = c6.columns(2)
+                
+                # Butang Edit (Membuka Modal Pop-up)
+                if btn_col1.button("✏️", key=f"edit_{row['id']}", help="Kemaskini Aset"):
+                    edit_dialog(row)
+
+                # Butang Padam (Menggunakan Popover Pengesahan)
+                with btn_col2:
+                    with st.popover("🗑️", help="Padam Aset"):
+                        st.write("Padam rekod ini?")
+                        if st.button("Ya, Padam", key=f"del_confirm_{row['id']}", type="primary"):
+                            delete_item(row['id'])
+                            st.toast(f"Aset '{row['nama_aset']}' telah dipadam.")
+                            st.rerun()
